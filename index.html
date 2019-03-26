@@ -67,6 +67,7 @@
 
         // Using id to combine two datasets
         let stateInfos = {};
+        let statePie = {};
         let idToState = {};
         stateIDs.forEach( row => {
           idToState[row.id] = row.name;
@@ -116,8 +117,8 @@
 
 
         // Creat pie chart of energy breakdown for selected state
-        function createPieChart(){
-          var data = [{"letter":"q","presses":1},{"letter":"w","presses":5},{"letter":"e","presses":2}];
+        function createPieChart(data){
+          d3.select('#piechart').selectAll('g').remove();
 
           var svg = d3.select("#piechart");
           var width = svg.attr("width");
@@ -126,7 +127,7 @@
           var radius = Math.min(width, height) / 2;
           var color = d3.scaleOrdinal(d3.schemeAccent);
 
-          var pie = d3.pie().value(function(d) {return d.presses})(data);
+          var pie = d3.pie().value(function(d) {return d.value})(data);
 
           var arc = d3.arc().outerRadius(radius-10).innerRadius(50);
           var labelArc = d3.arc().outerRadius(radius-40).innerRadius(radius-40);
@@ -134,7 +135,14 @@
           var chart = svg.append("g").attr("transform", "translate("+width/2+","+height/2+")");
 
           var g = chart.selectAll("arc").data(pie).enter().append("g").attr("class","arc");
-          g.append("path").attr("d",arc).style("fill", function(d) {return color(d.data.letter);});
+          g.append("path").attr("d",arc).style("fill", function(d) {return color(d.data.category);});
+
+          g.append("text")
+          	.attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
+            .style("text-anchor", "end")
+          	.text(function(d) { return d.data.category;})
+          	.style("fill", "#fff");
+
 
         }
 
@@ -145,15 +153,22 @@
         function updateMap(value){
 
           let year = value;
-          let dataToCheck = "CoalC" + year;
+          let coal = "CoalC" + year;
+          let fossfuel = "FossFuelC" + year;
+          let geo = "GeoC" + year;
+          let hydro = "HydroC" + year;
+          let natgas = "NatGasC" + year;
+          let lpg = "LPGC" + year;
 
           stateEnergy.forEach( state => {
-            stateInfos[state.State] = Number(state[dataToCheck]);
+            let total = Number(state[coal]) + Number(state[fossfuel]) + Number(state[geo]) + Number(state[hydro]) + Number(state[natgas]) + Number(state[lpg])
+            stateInfos[state.State] = total;
+
+            statePie[state.State] = [{"category":"Coal", "value": Number(state[coal])/total}, {"category":"Foss", "value": (Number(state[fossfuel]) + Number(state[lpg]))/total}, {"category":"Geo", "value": Number(state[geo])/total}, {"category": "Hydro", "value": Number(state[hydro])/total}, {"category":"NatGas", "value": Number(state[natgas])/total}];
           });
-          //console.log(stateInfos);
 
           const minMax = d3.extent(stateIDs, d => stateInfos[d.name]);
-          //console.log(minMax);
+          
           // const colorScale = d3.scaleSequential(d3.interpolateGnBu).domain(minMax);
           const colorScale = d3.scaleQuantile()
                                 .domain(d3.values(stateInfos))
@@ -165,7 +180,6 @@
           // 3d. Recolor the states to make a choropleth
 
 
-
           map.selectAll(".state")
               .style("fill", d => colorScale( stateInfos[ idToState[d.id] ] ))
               .on("mouseover", function(){
@@ -175,7 +189,8 @@
                 d3.select(this).style("opacity",1);
               })
               .on("click", function(){
-                createPieChart();
+                let stateid = d3.select(this).attr("note");
+                createPieChart(statePie[idToState[stateid]]);
               });
 
           updateLegend(minMax, colorScale);
@@ -187,7 +202,7 @@
         updateMap(2010);
 
         var sliderDiv = d3.select("#map").append("div");
-        console.log(sliderDiv);
+
         sliderDiv.append("div").text("Year")
                   .append("div")
                   .append("input")
