@@ -1,3 +1,56 @@
+body {
+  background-color: #e8e2c9;
+}
+
+h1 {
+  text-align: center;
+}
+
+h3{
+  margin-top: 80;
+  margin-bottom: 10;
+}
+
+.m {
+  float:left;
+  width: 80%;
+  text-align: center;
+  display: inline-block;
+
+}
+
+.container {
+  /* border-radius: 20px; */
+  background-color: #8e805f;
+  height: 700;
+  width: 800;
+}
+
+.chart {
+  float: left;
+  width: 20%;
+  display:flex;
+  flex-wrap: wrap;
+}
+
+[id^="slider"] {
+  float: left;
+  height: 100;
+  width: 180;
+  text-align: center;
+  margin-top: -15;
+}
+[id^="year"] {
+  margin-top: 50;
+  margin-left: -180;
+  float: left;
+}
+[id^="label"] {
+  margin-bottom: -35;
+  margin-left: 5;
+}
+
+
 .state {
   fill: lightgrey;
   stroke: none;

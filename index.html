@@ -10,20 +10,39 @@
 </head>
 
 <body leftmargin = "50" topmargin = "50">
-  <div class="container larger">
-    <h3>Energy Consumptions</h3>
+  <div class="larger">
+    <h1>Energy Consumptions</h1>
 
     <div id = "map">
-      <svg id = "usmap" height = 800 width = 1000 style = "background: #445; margin-top:50px">
-      </svg>
-      <svg id = "piechart" height = 200 width = 200 style = "background: black; margin-top: 50px">
-      </svg>
+      <h3>US Total Energy Consumptions in billion BTU in 2010-2014</h3>
+      <div class = "m">
+        <div class = "container">
+          <svg id = "usmap" height = 700 width = 800 style = "background: #8e805f">
+          </svg>
+        </div>
+        <svg id="colorLegend" height="100" width="600" style="background: #e8e2c9; margin-top:30px" >
+        </svg>
+      </div>
 
-      <svg id="colorLegend" height="100" width="600" style="background: #fff; margin-top:30px" >
-      </svg>
+      <div class = "chart">
+        <svg id = "piechart" height = 200 width = 200 style = "background: #8e805f">
+        </svg>
+        <svg id = "legend" height = 200 width = 200 style = "background:#8e805f">
+        </svg>
+        <p>Click on each state to see energy consumption breakdown.</p>
+
+        <label id = "label">Choose Year</label>
+        <input type="range" min="2010" max="2014" value="2010" id="slider" step="1" oninput="outputUpdate(value)">
+        <output for="slider" id="year">2010</output>
+      </div>
+
 
 
       <script>
+      function outputUpdate(value) {
+	       document.querySelector('#year').value = value;
+       }
+
       const svg = d3.select("#usmap");
       const width = svg.attr("width");
       const height = svg.attr("height");
@@ -48,13 +67,20 @@
             .append("path")
             .attr("class","state")
             .attr("d", path)
-            .attr("note", d => d.id);  // We used this for debugging
+            .attr("note", d => d.id);
 
         map.append("path")
             .datum(statesMesh)
             .attr("class","outline")
             .attr("d", path);
 
+        map.append("rect")
+            .attr("class","hoverover")
+            .attr("width", 150)
+            .attr("height", 160)
+            .style("fill", "white")
+            .style("opacity", 0.6)
+            .style("visibility", "hidden");
 
         // Loading energy data
         const energyData = await d3.csv("./dataset/Energy_Census_and_Economic_Data_US_2010-2014.csv");
@@ -74,7 +100,7 @@
         });
         console.log(idToState);
 
-
+        let stateid = 36;
 
         // Function to update legend according to data
         function updateLegend(minMax, colorScale){
@@ -115,17 +141,22 @@
 
 
 
-
+        var color = d3.scaleOrdinal(d3.schemeAccent);
+        var temp = {}
         // Creat pie chart of energy breakdown for selected state
-        function createPieChart(data){
+        function createPieChart(data, stateid){
           d3.select('#piechart').selectAll('g').remove();
+
+
+          data.forEach( d => {
+            temp[d.category] = d.value;
+          })
 
           var svg = d3.select("#piechart");
           var width = svg.attr("width");
           var height = svg.attr("height");
 
           var radius = Math.min(width, height) / 2;
-          var color = d3.scaleOrdinal(d3.schemeAccent);
 
           var pie = d3.pie().value(function(d) {return d.value})(data);
 
@@ -134,19 +165,38 @@
 
           var chart = svg.append("g").attr("transform", "translate("+width/2+","+height/2+")");
 
-          var g = chart.selectAll("arc").data(pie).enter().append("g").attr("class","arc");
+          var g = chart.selectAll("arc").data(pie).enter().append("g").attr("class","arc").attr("note", d => d.data.category);
           g.append("path").attr("d",arc).style("fill", function(d) {return color(d.data.category);});
+          g.append("text").text(idToState[stateid]).style("text-anchor", "middle").style("fill","white");
 
-          g.append("text")
-          	.attr("transform", function(d) { return "translate(" + labelArc.centroid(d) + ")"; })
-            .style("text-anchor", "end")
-          	.text(function(d) { return d.data.category;})
-          	.style("fill", "#fff");
+          d3.select("#piechart").selectAll("g").selectAll(".arc")
+            .on("mouseover", function(){
+              let category = d3.select(this).attr("note");
+              d3.select("#piechart").append("text")
+                .attr("id", category.replace(/[ _\-,.:'#!\?]/g,""))
+                .attr("x", 135)
+                .attr("y", 25)
+                .text(category)
+                .style("fill", "white")
+                .style("font-weight","bold");
+              d3.select("#piechart").append("text")
+                .attr("id", "category_value")
+                .attr("x", 135)
+                .attr("y", 45)
+                .text((temp[category]*100).toFixed(2) + '%')
+                .style("fill", "white")
+                .style("font-weight","bold");
+              d3.select(this).style("opacity",0.5);
 
+            })
+            .on("mouseout", function(){
+              let category = d3.select(this).attr("note");
+              d3.select(this).style("opacity",1);
+              d3.select("#" + category.replace(/[ _\-,.:'#!\?]/g,"")).remove();
+              d3.select("#category_value").remove();
+            });
 
         }
-
-
 
 
         // Function to update map according to year
@@ -168,11 +218,12 @@
           });
 
           const minMax = d3.extent(stateIDs, d => stateInfos[d.name]);
-          
+
           // const colorScale = d3.scaleSequential(d3.interpolateGnBu).domain(minMax);
           const colorScale = d3.scaleQuantile()
                                 .domain(d3.values(stateInfos))
-                                .range(["#fff","#d0e1e5","#adc2da","#8879b3","#762b80"]);
+                                .range(["#fff","#efd0d0", "#eab9b9", "#d37070", "#bf3f3f", "#8c1616", "#7a0202", "#6b1d1d","#540505", "#3a0000", "#260909"])
+                                //.range(["#fff","#d0e1e5","#adc2da","#8879b3","#762b80"]);
           // const colorScale = d3.scaleQuantize()
           //                       .domain(minMax)
           //                       .range(["#f6fbfc","#adc2da","#8879b3","#762b80"]);
@@ -183,14 +234,46 @@
           map.selectAll(".state")
               .style("fill", d => colorScale( stateInfos[ idToState[d.id] ] ))
               .on("mouseover", function(){
+                let id = d3.select(this).attr("note");
+                let x = event.clientX-60;
+                let y = event.clientY-70;
+                let display = d3.select(".hoverover");
                 d3.select(this).style("opacity",0.5);
+                display.style("visibility", "visible")
+                  .attr("x", x)
+                  .attr("y", y);
+                // map.append("text")
+                //   .text(d3.select(this).attr("note"))
+                //   .attr("id", "state_information")
+                //   .attr("x", x)
+                //   .attr("y", y);
+                for(let i = 0; i < statePie[idToState[id]].length; i++){
+                  map.append("text")
+                    .text(idToState[id])
+                    .attr("x", x+5)
+                    .attr("y", y+20)
+                    .attr("class", "textinfo");
+                  map.append("text")
+                    .text(statePie[idToState[id]][i].category+": ")
+                    .attr("x", x+5)
+                    .attr("y", y+(i+1)*25+20)
+                    .attr("class", "textinfo");
+                  map.append("text")
+                    .text((temp[statePie[idToState[id]][i].category]*100).toFixed(2) + '%')
+                    .attr("x", x+15+statePie[idToState[id]][i].category.length*10)
+                    .attr("y", y+(i+1)*25+20)
+                    .attr("class", "textinfo");
+                }
               })
               .on("mouseout", function(){
                 d3.select(this).style("opacity",1);
+                d3.select("#state_information").remove();
+                d3.select(".hoverover").style("visibility", "hidden");
+                d3.selectAll(".textinfo").remove();
               })
               .on("click", function(){
-                let stateid = d3.select(this).attr("note");
-                createPieChart(statePie[idToState[stateid]]);
+                stateid = d3.select(this).attr("note");
+                createPieChart(statePie[idToState[stateid]], stateid);
               });
 
           updateLegend(minMax, colorScale);
@@ -198,24 +281,49 @@
         }
 
 
+
+
         // making slider
         updateMap(2010);
+        createPieChart(statePie[idToState[stateid]], stateid);
 
-        var sliderDiv = d3.select("#map").append("div");
+        // create legend for piechart
+        var legend = d3.select("#legend")
+        for(let i = 0; i < statePie[idToState[stateid]].length; i++){
+          legend.append("rect")
+                .attr("x", 20)
+                .attr("y", 20+i*30)
+                .attr("width", 25)
+                .attr("height", 25)
+                .style("fill", color(statePie[idToState[stateid]][i].category));
 
-        sliderDiv.append("div").text("Year")
-                  .append("div")
-                  .append("input")
-                  .attr("type", "range")
-                  .attr("class", "yearslider")
-                  .style("width","300px")
-                  .attr("min", 2010)
-                  .attr("max", 2014)
-                  .attr("step", 1)
-                  .attr("value", 2010)
-                  .on("input", function () {
-                    updateMap(Number(this.value));
-                  });
+          legend.append("text")
+                .attr("x", 60)
+                .attr("y", i*30+40)
+                .attr("height", 25)
+                .text(statePie[idToState[stateid]][i].category)
+                .style("fill", "white")
+                .style("font-weight", "bold");
+
+        }
+
+        // var sliderDiv = d3.select(".chart").append("div").attr("class", "yearslider");
+        //
+        // sliderDiv.append("div").text("Year")
+        //           .append("div")
+        //           .append("input")
+        //           .attr("type", "range")
+        //           .style("width","200px")
+        //           .attr("min", 2010)
+        //           .attr("max", 2014)
+        //           .attr("step", 1)
+        //           .attr("value", 2010)
+
+        // Update map and piechart according to current year
+        d3.select("#slider").on("input", function () {
+          updateMap(Number(this.value));
+          createPieChart(statePie[idToState[stateid]], stateid);
+        });
 
       }
 
