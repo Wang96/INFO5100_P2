@@ -17,7 +17,7 @@
       <h3>US Total Energy Consumptions in billion BTU in 2010-2014</h3>
       <div class = "m">
         <div class = "container">
-          <svg id = "usmap" height = 700 width = 800 style = "background: #8e805f">
+          <svg id = "usmap" height = 900 width = 1100 style = "background: #8e805f">
           </svg>
         </div>
         <svg id="colorLegend" height="100" width="600" style="background: #e8e2c9; margin-top:30px" >
@@ -167,7 +167,7 @@
 
           var g = chart.selectAll("arc").data(pie).enter().append("g").attr("class","arc").attr("note", d => d.data.category);
           g.append("path").attr("d",arc).style("fill", function(d) {return color(d.data.category);});
-          g.append("text").text(idToState[stateid]).style("text-anchor", "middle").style("fill","white");
+          g.append("text").text(idToState[stateid]).style("text-anchor", "middle").style("fill","white").style("font-size",25);
 
           d3.select("#piechart").selectAll("g").selectAll(".arc")
             .on("mouseover", function(){
@@ -235,8 +235,8 @@
               .style("fill", d => colorScale( stateInfos[ idToState[d.id] ] ))
               .on("mouseover", function(){
                 let id = d3.select(this).attr("note");
-                let x = event.clientX-60;
-                let y = event.clientY-70;
+                let x = event.clientX + 150 >= 1000? event.clientX - 150 -100:event.clientX-60;
+                let y = event.clientY + 160 >= 1000? 500:event.clientY-200;
                 let display = d3.select(".hoverover");
                 d3.select(this).style("opacity",0.5);
                 display.style("visibility", "visible")
