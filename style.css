@@ -34,29 +34,6 @@ h3{
   flex-wrap: wrap;
 }
 
-[id^="slider"] {
-  float: left;
-  height: 100;
-  width: 200;
-  text-align: center;
-  margin-top: -15;
-  margin-left: -35%;
-}
-[id^="year"] {
-  margin-top: 50;
-  margin-left: -63%;
-  float: left;
-  font-size: 20;
-  font-family: 'Montserrat', sans-serif;
-}
-[id^="label"] {
-  margin-bottom: -35;
-  margin-left: 10;
-  font-size: 20;
-  font-family: 'Montserrat', sans-serif;
-}
-
-
 .state {
   fill: lightgrey;
   stroke: none;

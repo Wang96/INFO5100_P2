@@ -9,7 +9,6 @@
 
 </head>
 <style>
-
       .outline {
         stroke: white;
         stroke-width: 1px;
@@ -17,10 +16,8 @@
       }
       h1{
           font-family: 'Montserrat', sans-serif;
-
           color:black;
       }
-
       h2{
           font-family: 'Montserrat', sans-serif;
           size: 24;
@@ -35,16 +32,12 @@
         color:#778472;
         font-family: 'Montserrat', sans-serif
       }
-
       body{
         background: white
       }
-
       .textcolor{
         color:white
       }
-
-
   </style>
 
 
@@ -80,11 +73,13 @@
         </svg>
         <svg id = "legend" height = 200 width = 200 style = "background:white">
         </svg>
-        <p>Click on each state to see energy consumption breakdown.</p>
+        <svg id = "slider" height = 400 width = 200 style = "background: white">
+        </svg>
 
-        <label id = "label">Choose Year</label>
-        <input type="range" min="2010" max="2014" value="2010" id="slider" step="1" oninput="outputUpdate(value)">
-        <output for="slider" id="year">2010</output>
+        <!-- <text id = "label">Choose Year</text> -->
+        <!-- <input type="range" min="2010" max="2014" value="2010" id="slider" step="1" oninput="outputUpdate(value)">
+        <output for="slider" id="year">2010</output> -->
+
       </div>
 
 
@@ -93,7 +88,6 @@
       function outputUpdate(value) {
 	       document.querySelector('#year').value = value;
        }
-
       const svg = d3.select("#usmap");
       const width = svg.attr("width");
       const height = svg.attr("height");
@@ -102,29 +96,24 @@
       const mapHeight = height - margin.top - margin.bottom;
       const map = svg.append("g")
                       .attr("transform","translate("+margin.left+","+margin.top+")");
-
       const requestData = async () => {
         // Drawing basic us map
         const us = await d3.json("./dataset/us.json");
         console.log(us);
-
         var states = topojson.feature(us, us.objects.states);
         var statesMesh = topojson.mesh(us, us.objects.states);
         var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states);
         var path = d3.geoPath().projection(projection);
-
         map.selectAll("path").data(states.features)
             .enter()
             .append("path")
               .attr("class","state")
             .attr("d", path)
             .attr("note", d => d.id);
-
         map.append("path")
             .datum(statesMesh)
               .attr("class","outline")
             .attr("d", path);
-
         map.append("rect")
             .attr("class","hoverover")
             .attr("width", 150)
@@ -132,48 +121,89 @@
             .style("fill", "white")
             .style("opacity", 0.6)
             .style("visibility", "hidden");
-
         // Loading energy data
         const energyData = await d3.csv("./dataset/Energy_Census_and_Economic_Data_US_2010-2014.csv");
         //console.log(energyData);
         const stateEnergy = energyData.slice(0,51);
         console.log(stateEnergy);
-
         // Loading state ids --> used to combine map data and energy data
         const stateIDs = await d3.tsv("./dataset/us-state-names.tsv");
-
         // Using id to combine two datasets
         let stateInfos = {};
         let statePie = {};
         let idToState = {};
+        let flag = 0;
         stateIDs.forEach( row => {
           idToState[row.id] = row.name;
         });
-        console.log(idToState);
 
         let stateid = 36;
+        let year = 2010;
+
+        // Create button for selection
+        d3.select("#usmap").append("rect")
+          .attr("id","total")
+          .attr("x",270)
+          .attr("y",800)
+          .attr("height",80)
+          .attr("width",200)
+          .style("fill","#0E4D64")
+          .on("click",function(){
+            flag = 0;
+            d3.select(this).style("fill","#0E4D64");
+            d3.select("#totaltext").style("fill","white");
+            d3.select("#percap").style("fill","#BFE1B0");
+            d3.select("#percaptext").style("fill","#0A2F51");
+            updateMap(year);
+          });
+
+        d3.select("#usmap").append("rect")
+          .attr("id","percap")
+          .attr("x",620)
+          .attr("y",800)
+          .attr("height",80)
+          .attr("width",200)
+          .style("fill","#BFE1B0")
+          .on("click",function(){
+            flag = 1;
+            d3.select(this).style("fill","#0E4D64");
+            d3.select("#percaptext").style("fill","white");
+            d3.select("#total").style("fill","#BFE1B0");
+            d3.select("#totaltext").style("fill","#0A2F51");
+            updateMap(year);
+          });
+
+        d3.select("#usmap").append("text")
+          .attr("id","totaltext")
+          .attr("x",300)
+          .attr("y",850)
+          .text("Total Consumptions")
+          .style("fill","white");
+
+        d3.select("#usmap").append("text")
+          .attr("id","percaptext")
+          .attr("x",630)
+          .attr("y",850)
+          .text("Consumptions Per Capita")
+          .style("fill","#0A2F51");
 
         // Function to update legend according to data
         function updateLegend(minMax, colorScale){
           // Clear previous legends
           d3.select('#colorLegend').selectAll('g').remove();
-
           // Copy from lecture notes
           const legend = d3.select("#colorLegend");
           const legendWidth = legend.attr("width");
           const legendHeight = legend.attr("height");
           const barHeight = 60;
           const stepSize = 4;
-
           const pixelScale = d3.scaleLinear().domain([0,legendWidth-40]).range([minMax[0]-1,minMax[1]+1]);
           const barScale = d3.scaleLinear().domain([minMax[0]-1,minMax[1]+1]).range([0,legendWidth-40]);
           const barAxis = d3.axisBottom(barScale);
-
           legend.append("g")
             .attr("class", "colorbar axis")
             .attr("transform","translate("+(20)+","+(barHeight+5)+")")
             .call(barAxis);
-
           let bar = legend.append("g").attr("transform","translate("+(20)+","+(0)+")")
           for (let i=0; i<legendWidth-40; i=i+stepSize) {
             bar.append("rect")
@@ -183,43 +213,28 @@
               .attr("height",barHeight)
               .style("fill", colorScale( pixelScale(i) ));
           }
-
           bar.append("line").attr("stroke","white").attr("stroke-width",3).attr("x1", barScale(minMax[0])).attr("x2", barScale(minMax[0])).attr("y1", 0).attr("y1", barHeight+4);
           bar.append("line").attr("stroke","white").attr("stroke-width",3).attr("x1", barScale(minMax[1])).attr("x2", barScale(minMax[1])).attr("y1", 0).attr("y1", barHeight+4);
-
-
         }
-
-
-
         var color = d3.scaleOrdinal(d3.schemePastel1);
         var temp = {}
         // Creat pie chart of energy breakdown for selected state
         function createPieChart(data, stateid){
           d3.select('#piechart').selectAll('g').remove();
-
-
           data.forEach( d => {
             temp[d.category] = d.value;
           })
-
           var svg = d3.select("#piechart");
           var width = svg.attr("width");
           var height = svg.attr("height");
-
           var radius = Math.min(width, height) / 2;
-
           var pie = d3.pie().value(function(d) {return d.value})(data);
-
           var arc = d3.arc().outerRadius(radius-10).innerRadius(50);
           var labelArc = d3.arc().outerRadius(radius-40).innerRadius(radius-40);
-
           var chart = svg.append("g").attr("transform", "translate("+width/2+","+height/2+")");
-
           var g = chart.selectAll("arc").data(pie).enter().append("g").attr("class","arc").attr("note", d => d.data.category);
           g.append("path").attr("d",arc).style("fill", function(d) {return color(d.data.category);});
           g.append("text").text(idToState[stateid]).style("text-anchor", "middle").style("fill","black").style("font-size",25);
-
           d3.select("#piechart").selectAll("g").selectAll(".arc")
             .on("mouseover", function(){
               let category = d3.select(this).attr("note");
@@ -238,7 +253,6 @@
                 .style("fill", "black");
               //  .style("font-weight","bold");
               d3.select(this).style("opacity",0.5);
-
             })
             .on("mouseout", function(){
               let category = d3.select(this).attr("note");
@@ -246,13 +260,9 @@
               d3.select("#" + category.replace(/[ _\-,.:'#!\?]/g,"")).remove();
               d3.select("#category_value").remove();
             });
-
         }
-
-
         // Function to update map according to year
         function updateMap(value){
-
           let year = value;
           let coal = "CoalC" + year;
           let fossfuel = "FossFuelC" + year;
@@ -260,14 +270,17 @@
           let hydro = "HydroC" + year;
           let natgas = "NatGasC" + year;
           let lpg = "LPGC" + year;
-
+          let population = "POPESTIMATE" + year
           stateEnergy.forEach( state => {
-            let total = Number(state[coal]) + Number(state[fossfuel]) + Number(state[geo]) + Number(state[hydro]) + Number(state[natgas]) + Number(state[lpg])
-            stateInfos[state.State] = total;
-
+            let total = Number(state[coal]) + Number(state[fossfuel]) + Number(state[geo]) + Number(state[hydro]) + Number(state[natgas]) + Number(state[lpg]);
+            if (flag == 0){
+              stateInfos[state.State] = total;
+            }
+            else{
+              stateInfos[state.State] = total/Number(state[population]);
+            }
             statePie[state.State] = [{"category":"Coal", "value": Number(state[coal])/total}, {"category":"Foss", "value": (Number(state[fossfuel]) + Number(state[lpg]))/total}, {"category":"Geo", "value": Number(state[geo])/total}, {"category": "Hydro", "value": Number(state[hydro])/total}, {"category":"NatGas", "value": Number(state[natgas])/total}];
           });
-
           const minMax = d3.extent(stateIDs, d => stateInfos[d.name]);
 
           // const colorScale = d3.scaleSequential(d3.interpolateGnBu).domain(minMax);
@@ -278,18 +291,15 @@
           // const colorScale = d3.scaleQuantize()
           //                       .domain(minMax)
           //                       .range(["#f6fbfc","#adc2da","#8879b3","#762b80"]);
-
           // 3d. Recolor the states to make a choropleth
-
-
           map.selectAll(".state")
               .style("fill", d => colorScale( stateInfos[ idToState[d.id] ] ))
               .on("mouseover", function(){
+                d3.select(this).style("opacity",0.5);
                 let id = d3.select(this).attr("note");
                 let x = event.clientX + 150 >= 1200? event.clientX-150-150:event.clientX-100;
                 let y = event.clientY + 160 >= 1400? 500:event.clientY-180;
                 let display = d3.select(".hoverover");
-                d3.select(this).style("opacity",0.5);
                 display.style("visibility", "visible")
                   .attr("x", x)
                   .attr("y", y);
@@ -326,18 +336,11 @@
                 stateid = d3.select(this).attr("note");
                 createPieChart(statePie[idToState[stateid]], stateid);
               });
-
           updateLegend(minMax, colorScale);
-
         }
-
-
-
-
         // making slider
-        updateMap(2010);
+        updateMap(year);
         createPieChart(statePie[idToState[stateid]], stateid);
-
         // create legend for piechart
         var legend = d3.select("#legend")
         for(let i = 0; i < statePie[idToState[stateid]].length; i++){
@@ -347,7 +350,6 @@
                 .attr("width", 25)
                 .attr("height", 25)
                 .style("fill", color(statePie[idToState[stateid]][i].category));
-
           legend.append("text")
                 .attr("x", 60)
                 .attr("y", i*30+40)
@@ -355,31 +357,70 @@
                 .text(statePie[idToState[stateid]][i].category)
                 .style("fill", "black");
                 //.style("font-weight", "bold");
-
         }
 
-        // var sliderDiv = d3.select(".chart").append("div").attr("class", "yearslider");
-        //
-        // sliderDiv.append("div").text("Year")
-        //           .append("div")
-        //           .append("input")
-        //           .attr("type", "range")
-        //           .style("width","200px")
-        //           .attr("min", 2010)
-        //           .attr("max", 2014)
-        //           .attr("step", 1)
-        //           .attr("value", 2010)
+        var slider = d3.select("svg#slider");
+        var years = ["2010","2011","2012","2013","2014"];
+        slider.append("line")
+              .attr("x1", 40)
+              .attr("x2", 40)
+              .attr("y1", 40)
+              .attr("y2", 40+4*45)
+              .style("stroke", "lightgrey")
+              .style("stroke-width", 5);
+        for(let i = 0; i < years.length; i++) {
+          slider.append("circle")
+                .attr("id", "year"+years[i])
+                .attr("r", 15)
+                .attr("cx", 40)
+                .attr("cy", 40+i*45)
+                .style("fill","lightgrey")
+                .on("click", function(){
+                  year = Number(years[i]);
+                  updateMap(year);
+                  createPieChart(statePie[idToState[stateid]], stateid);
+                  for(let j = 0; j < years.length; j++){
+                    if(j != i){
+                      d3.select("#year"+years[j]).style("fill","lightgrey");
+                      d3.select("#text"+years[j]).style("fill","#grey").style("font-size",15);
+                    }
+                    else{
+                      d3.select("#year"+years[j]).style("fill","grey");
+                      d3.select("#text"+years[j]).style("fill","#37393d").style("font-size",20);
+                    }
+                  }
 
-        // Update map and piechart according to current year
-        d3.select("#slider").on("input", function () {
-          updateMap(Number(this.value));
-          createPieChart(statePie[idToState[stateid]], stateid);
-        });
+                });
+          slider.append("text")
+                .text(years[i])
+                .attr("id","text"+years[i])
+                .attr("x", 60)
+                .attr("y", 45+i*45)
+                .style("fill", "grey")
+                .style("font-size", 15)
+                .on("click", function(){
+                  year = Number(years[i]);
+                  updateMap(year);
+                  createPieChart(statePie[idToState[stateid]], stateid);
+                  for(let j = 0; j < years.length; j++){
+                    if(j != i){
+                      d3.select("#year"+years[j]).style("fill","lightgrey");
+                      d3.select("#text"+years[j]).style("fill","#grey").style("font-size",15);
+                    }
+                    else{
+                      d3.select("#year"+years[j]).style("fill","grey");
+                      d3.select("#text"+years[j]).style("fill","#37393d").style("font-size",20);
+                    }
+                  }
+
+                });
+        }
+
+        d3.select("#year2010").style("fill","grey");
+        d3.select("#text2010").style("fill","#37393d").style("font-size",20);
 
       }
-
       requestData();
-
       </script>
 
     </div>
