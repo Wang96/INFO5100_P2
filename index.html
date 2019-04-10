@@ -8,26 +8,77 @@
 
 
 </head>
+<style>
+
+      .outline {
+        stroke: white;
+        stroke-width: 1px;
+        fill: none;
+      }
+      h1{
+          font-family: 'Montserrat', sans-serif;
+
+          color:#778472;
+      }
+
+      h2{
+          font-family: 'Montserrat', sans-serif;
+          size: 24;
+          color:#778472;
+      }
+      h3{
+          font-family: 'Montserrat', sans-serif;
+          size: 13;
+          color: #778472;
+      }
+      text{
+        color:#778472;
+        font-family: 'Montserrat', sans-serif
+      }
+
+      body{
+        background: white
+      }
+
+      .textcolor{
+        color:white
+      }
+
+
+  </style>
+
+
 
 <body leftmargin = "50" topmargin = "50">
   <div class="larger">
-    <h1>Energy Consumptions</h1>
+    <h1>How Will The Green New Deal Impact Your State?</h1>
+    <center><h3> The green new deal aims to reach carbon neutrality in the US by the year 2030.
+    </br>
+    </br>
+    Hover over your state to see its Primary Energy Consumption Breakdown.
+  </br>
+  </br>
+    Then, click on your state to see how your community will reach zero emissions.
+  </h3> <center>
+
 
     <div id = "map">
-      <h3>US Total Energy Consumptions in billion BTU in 2010-2014</h3>
+    </br>
+    </br>
+      <h2>US Total Energy Consumptions in billion BTU</h2>
       <div class = "m">
         <div class = "container">
-          <svg id = "usmap" height = 900 width = 1100 style = "background: #5A94BF">
+          <svg id = "usmap" height = 900 width = 1100 style = "background: white">
           </svg>
         </div>
-        <svg id="colorLegend" height="100" width="600" style="background: #e8e2c9; margin-top:30px" >
+        <svg id="colorLegend" height="100" width="600" style="background: white; margin-top:30px" >
         </svg>
       </div>
 
       <div class = "chart">
-        <svg id = "piechart" height = 200 width = 200 style = "background: #8e805f">
+        <svg id = "piechart" height = 200 width = 200 style = "background: white">
         </svg>
-        <svg id = "legend" height = 200 width = 200 style = "background:#8e805f">
+        <svg id = "legend" height = 200 width = 200 style = "background:white">
         </svg>
         <p>Click on each state to see energy consumption breakdown.</p>
 
@@ -65,13 +116,13 @@
         map.selectAll("path").data(states.features)
             .enter()
             .append("path")
-            .attr("class","state")
+              .attr("class","state")
             .attr("d", path)
             .attr("note", d => d.id);
 
         map.append("path")
             .datum(statesMesh)
-            .attr("class","outline")
+              .attr("class","outline")
             .attr("d", path);
 
         map.append("rect")
@@ -141,7 +192,7 @@
 
 
 
-        var color = d3.scaleOrdinal(d3.schemeAccent);
+        var color = d3.scaleOrdinal(d3.schemePastel1);
         var temp = {}
         // Creat pie chart of energy breakdown for selected state
         function createPieChart(data, stateid){
@@ -167,7 +218,7 @@
 
           var g = chart.selectAll("arc").data(pie).enter().append("g").attr("class","arc").attr("note", d => d.data.category);
           g.append("path").attr("d",arc).style("fill", function(d) {return color(d.data.category);});
-          g.append("text").text(idToState[stateid]).style("text-anchor", "middle").style("fill","white").style("font-size",25);
+          g.append("text").text(idToState[stateid]).style("text-anchor", "middle").style("fill","black").style("font-size",25);
 
           d3.select("#piechart").selectAll("g").selectAll(".arc")
             .on("mouseover", function(){
@@ -177,15 +228,15 @@
                 .attr("x", 135)
                 .attr("y", 25)
                 .text(category)
-                .style("fill", "white")
-                .style("font-weight","bold");
+                .style("fill", "black");
+                //.style("font-weight","bold");
               d3.select("#piechart").append("text")
                 .attr("id", "category_value")
                 .attr("x", 135)
                 .attr("y", 45)
                 .text((temp[category]*100).toFixed(2) + '%')
-                .style("fill", "white")
-                .style("font-weight","bold");
+                .style("fill", "black");
+              //  .style("font-weight","bold");
               d3.select(this).style("opacity",0.5);
 
             })
@@ -222,7 +273,7 @@
           // const colorScale = d3.scaleSequential(d3.interpolateGnBu).domain(minMax);
           const colorScale = d3.scaleQuantile()
                                 .domain(d3.values(stateInfos))
-                                .range(["#fff","#efd0d0", "#eab9b9", "#d37070", "#bf3f3f", "#8c1616", "#7a0202", "#6b1d1d","#540505", "#3a0000", "#260909"])
+                                .range(["#DEEDCF", "#BFE1B0", "#99D492", "#74C67A", "#56B870", "#39A96B", "#1D9A6C", "#188977", "#137177", "#0E4D64", "#0A2F51"])
                                 //.range(["#fff","#d0e1e5","#adc2da","#8879b3","#762b80"]);
           // const colorScale = d3.scaleQuantize()
           //                       .domain(minMax)
@@ -302,8 +353,8 @@
                 .attr("y", i*30+40)
                 .attr("height", 25)
                 .text(statePie[idToState[stateid]][i].category)
-                .style("fill", "white")
-                .style("font-weight", "bold");
+                .style("fill", "black");
+                //.style("font-weight", "bold");
 
         }
 
