@@ -44,21 +44,19 @@
 
 <body leftmargin = "50" topmargin = "50">
   <div class="larger">
-    <h1>How Will The Green New Deal Impact Your State?</h1>
-    <center><h3> The green new deal aims to reach carbon neutrality in the US by the year 2030.
+    <h1>How Much Energy Does Your State Consume?</h1>
+    <center><h3>
+    Click on your state to see its Primary Energy Consumption Breakdown.
     </br>
-    </br>
-    Hover over your state to see its Primary Energy Consumption Breakdown.
+    Toggle between total consumption and consumption per capita.
   </br>
-  </br>
-    Then, click on your state to see how your community will reach zero emissions.
   </h3> <center>
 
 
     <div id = "map">
     </br>
     </br>
-      <h2>US Total Energy Consumptions in billion BTU 2010-2014</h2>
+      <h2>US Total Energy Consumption in billion BTU 2010-2014</h2>
       <div class = "m">
         <div class = "container">
           <svg id = "usmap" height = 900 width = 1100 style = "background: white">
@@ -177,14 +175,14 @@
           .attr("id","totaltext")
           .attr("x",300)
           .attr("y",850)
-          .text("Total Consumptions")
+          .text("Total Consumption")
           .style("fill","white");
 
         d3.select("#usmap").append("text")
           .attr("id","percaptext")
           .attr("x",630)
           .attr("y",850)
-          .text("Consumptions Per Capita")
+          .text("Consumption Per Capita")
           .style("fill","#0A2F51");
 
         // Function to update legend according to data
