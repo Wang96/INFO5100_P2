@@ -6,6 +6,10 @@ h1 {
   text-align: center;
 }
 
+h2 {
+  margin-bottom: -20px;
+}
+
 h3{
   margin-top: 80;
   margin-bottom: 10;
@@ -14,14 +18,11 @@ h3{
 .m {
   float:left;
   width: 80%;
-  /* text-align: center; */
   display: inline-block;
 
 }
 
 .container {
-  /* border-radius: 20px; */
-  background-color: #8e805f;
   height: 900;
   width: 1100;
   text-align: center;
