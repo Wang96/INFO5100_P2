@@ -90,7 +90,6 @@
 
         // Drawing basic us map
         const us = await d3.json("./dataset/us.json");
-        console.log(us);
         var states = topojson.feature(us, us.objects.states);
         var statesMesh = topojson.mesh(us, us.objects.states);
         var projection = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], states);
