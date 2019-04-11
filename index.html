@@ -300,6 +300,11 @@
               .on("mouseover", function(){
                 d3.select(this).style("opacity",0.5);
                 let id = d3.select(this).attr("note");
+                let current = statePie[idToState[id]];
+                current.forEach( d => {
+                  temp[d.category] = d.value;
+                })
+                console.log(temp);
                 let x = event.clientX + 150 >= 1200? event.clientX-150-150:event.clientX-100;
                 let y = event.clientY + 160 >= 1400? 500:event.clientY-180;
                 let display = d3.select(".hoverover");
@@ -309,20 +314,20 @@
                   .attr("x", x)
                   .attr("y", y);
 
-                for(let i = 0; i < statePie[idToState[id]].length; i++){
+                for(let i = 0; i < current.length; i++){
                   map.append("text")
                     .text(idToState[id])
                     .attr("x", x+5)
                     .attr("y", y+20)
                     .attr("class", "textinfo");
                   map.append("text")
-                    .text(statePie[idToState[id]][i].category+": ")
+                    .text(current[i].category+": ")
                     .attr("x", x+5)
                     .attr("y", y+(i+1)*25+20)
                     .attr("class", "textinfo");
                   map.append("text")
-                    .text((temp[statePie[idToState[id]][i].category]*100).toFixed(2) + '%')
-                    .attr("x", x+15+statePie[idToState[id]][i].category.length*10)
+                    .text((temp[current[i].category]*100).toFixed(2) + '%')
+                    .attr("x", x+15+current[i].category.length*10)
                     .attr("y", y+(i+1)*25+20)
                     .attr("class", "textinfo");
                 }
