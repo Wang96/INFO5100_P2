@@ -141,6 +141,12 @@
           .attr("height",80)
           .attr("width",200)
           .style("fill","#0E4D64")
+          .on("mouseover", function(){
+            d3.select(this).style("opacity",0.8)
+          })
+          .on("mouseout", function(){
+            d3.select(this).style("opacity",1)
+          })
           .on("click",function(){
             flag = 0;
             d3.select(this).style("fill","#0E4D64");
@@ -157,6 +163,12 @@
           .attr("height",80)
           .attr("width",200)
           .style("fill","#BFE1B0")
+          .on("mouseover", function(){
+            d3.select(this).style("opacity",0.8)
+          })
+          .on("mouseout", function(){
+            d3.select(this).style("opacity",1)
+          })
           .on("click",function(){
             flag = 1;
             d3.select(this).style("fill","#0E4D64");
