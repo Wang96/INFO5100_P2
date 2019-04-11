@@ -304,7 +304,6 @@
                 current.forEach( d => {
                   temp[d.category] = d.value;
                 })
-                console.log(temp);
                 let x = event.clientX + 150 >= 1200? event.clientX-150-150:event.clientX-100;
                 let y = event.clientY + 160 >= 1400? 500:event.clientY-180;
                 let display = d3.select(".hoverover");
